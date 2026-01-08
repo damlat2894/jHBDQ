@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Quest } from '../types';
-import Confetti from './Confetti';
-import { CakeSlice } from './QuestCard';
+import { Quest } from '../types.ts';
+import Confetti from './Confetti.tsx';
+import { CakeSlice } from './QuestCard.tsx';
 
 interface QuestCompleteOverlayProps {
   quest: Quest;

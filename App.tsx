@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { UserRole, Friend, Quest, QuestStatus } from './types';
-import { FRIENDS, INITIAL_QUESTS, BIRTHDAY_START, BIRTHDAY_END } from './constants';
-import QuestCard from './components/QuestCard';
-import QuestCompleteOverlay from './components/QuestCompleteOverlay';
+import { UserRole, Friend, Quest, QuestStatus } from './types.ts';
+import { FRIENDS, INITIAL_QUESTS, BIRTHDAY_START, BIRTHDAY_END } from './constants.tsx';
+import QuestCard from './components/QuestCard.tsx';
+import QuestCompleteOverlay from './components/QuestCompleteOverlay.tsx';
 
 // Real-time Clock Component with Date
 const RealTimeClock: React.FC = () => {

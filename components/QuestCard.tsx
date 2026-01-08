@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Quest, QuestStatus } from '../types';
-import { FRIENDS } from '../constants';
+import { Quest, QuestStatus } from '../types.ts';
+import { FRIENDS } from '../constants.tsx';
 
 export const CakeSlice: React.FC<{ size?: string }> = ({ size = "w-32 h-32" }) => {
   return (
