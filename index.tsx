@@ -40,6 +40,7 @@ const FRIENDS: Friend[] = [
   { id: 'FRIEND_3', name: '민성', avatar: '🐶', color: 'bg-green-400' },
 ];
 
+// Target: 2026-01-15 JST/KST
 const BIRTHDAY_START = new Date('2026-01-15T00:00:00+09:00').getTime();
 const BIRTHDAY_END = new Date('2026-01-15T23:59:59+09:00').getTime();
 
@@ -64,8 +65,8 @@ const INITIAL_QUESTS: Quest[] = [
   },
   {
     id: 3,
-    title: "깜짝 편지 낭독하기",
-    description: "민성이의 미션! 부모님이나 소중한 사람에게 짧은 감사 메시지를 보내고 답장을 캡쳐해줘.",
+    title: "우리는 전생에 쌍둥이..?",
+    description: "전생에 너랑 민성이는 쌍둥이였을지도 몰라! 그런김에 서로 커플 기념품을 맞추라고 딱 오늘 놀이공원을 온거 같은데? 민성이와 커플 기념품을 맞추고 미션을 완료해줘.",
     creatorId: 'FRIEND_3',
     unlockTime: new Date().toISOString(),
     status: QuestStatus.AVAILABLE,
@@ -81,7 +82,6 @@ const INITIAL_QUESTS: Quest[] = [
 
 const AnimatedCake = () => (
   <div className="relative w-64 h-64 flex flex-col items-center justify-center floating">
-    {/* Candles */}
     <div className="flex gap-4 mb-[-10px] relative z-20">
       {[...Array(3)].map((_, i) => (
         <div key={i} className="flex flex-col items-center">
@@ -90,7 +90,6 @@ const AnimatedCake = () => (
         </div>
       ))}
     </div>
-    {/* Cake Layers */}
     <div className="relative w-56 h-24 bg-pink-100 rounded-t-[2rem] border-x-4 border-t-4 border-white shadow-inner flex items-center justify-center overflow-hidden">
         <div className="absolute top-0 w-full h-8 bg-white/40"></div>
         <span className="text-3xl">🍓</span>
@@ -103,13 +102,12 @@ const AnimatedCake = () => (
       </div>
       <div className="absolute bottom-4 w-full h-2 bg-pink-500/20"></div>
     </div>
-    {/* Plate */}
     <div className="w-72 h-6 bg-white rounded-full mt-[-10px] shadow-xl border-b-4 border-slate-200"></div>
   </div>
 );
 
 const Modal = ({ title, message, onConfirm, icon = "⚠️" }: any) => (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-fadeIn">
+  <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-fadeIn">
     <div className="soft-card p-10 w-full max-w-sm text-center border-4 border-white shadow-2xl transform animate-slideUp">
       <div className="text-5xl mb-6">{icon}</div>
       <h2 className="text-2xl font-black mb-4 text-slate-800 leading-tight">{title}</h2>
@@ -122,7 +120,7 @@ const Modal = ({ title, message, onConfirm, icon = "⚠️" }: any) => (
 const AdminLoginModal = ({ onConfirm, onCancel }: any) => {
   const [pw, setPw] = useState('');
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/70 backdrop-blur-md animate-fadeIn">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-slate-900/70 backdrop-blur-md animate-fadeIn">
       <div className="soft-card p-10 w-full max-w-sm text-center border-4 border-sky-100 shadow-2xl">
         <div className="text-4xl mb-4">🔐</div>
         <h2 className="text-2xl font-black mb-6 text-slate-800">관리자 인증</h2>
@@ -132,7 +130,7 @@ const AdminLoginModal = ({ onConfirm, onCancel }: any) => {
           onChange={e => setPw(e.target.value)} 
           placeholder="비밀번호"
           autoFocus 
-          className="w-full p-4 mb-6 bg-slate-100 rounded-2xl text-center text-2xl tracking-widest focus:ring-4 focus:ring-sky-200 outline-none font-bold"
+          className="w-full p-4 mb-6 bg-slate-100 rounded-2xl text-center text-3xl tracking-widest focus:ring-4 focus:ring-sky-200 outline-none font-bold"
           onKeyDown={e => e.key === 'Enter' && onConfirm(pw)}
         />
         <div className="flex gap-3">
@@ -148,7 +146,7 @@ const AdminEditor = ({ quest, onSave, onCancel }: any) => {
   const [t, setT] = useState(quest.title);
   const [d, setD] = useState(quest.description);
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-[130] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
       <div className="soft-card p-10 w-full max-w-md border-4 border-sky-100 shadow-2xl">
         <h2 className="text-2xl font-black mb-6 text-slate-800 text-center">미션 수정</h2>
         <div className="space-y-4">
@@ -169,19 +167,23 @@ const AdminEditor = ({ quest, onSave, onCancel }: any) => {
 // --- 4. MAIN APP ---
 
 const App = () => {
-  // Fix: Replaced untyped generic function call with type assertion on initial value to fix compiler error.
   const [currentUser, setCurrentUser] = useState(null as Friend | null);
-  // Fix: Replaced generic function call with type assertion in initializer function.
   const [quests, setQuests] = useState(() => {
     const saved = localStorage.getItem('bq_quests');
-    return (saved ? JSON.parse(saved) : INITIAL_QUESTS) as Quest[];
+    if (saved) {
+        // 기존 저장 데이터가 있다면 민성 미션만 강제 업데이트 할지 고민되지만,
+        // 사용자 요청에 따라 기본값(INITIAL_QUESTS)을 우선시하거나 덮어쓰기 로직을 넣습니다.
+        const parsed = JSON.parse(saved) as Quest[];
+        // 민성(FRIEND_3)의 미션 내용이 이전 것이라면 업데이트
+        return parsed.map(q => q.creatorId === 'FRIEND_3' ? { ...INITIAL_QUESTS[2], status: q.status } : q);
+    }
+    return INITIAL_QUESTS;
   });
   const [isAdmin, setIsAdmin] = useState(false);
-  // Fix: Removed generic type argument from untyped hook and used assertion.
   const [alertInfo, setAlertInfo] = useState(null as {title: string, msg: string, icon: string} | null);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
-  // Fix: Removed generic type argument from untyped hook and used assertion.
   const [editingQuestId, setEditingQuestId] = useState(null as number | null);
+  const [view, setView] = useState('HOME'); // 'HOME' or 'QUESTS'
 
   useEffect(() => {
     localStorage.setItem('bq_quests', JSON.stringify(quests));
@@ -191,7 +193,7 @@ const App = () => {
     if (isAdmin) return true;
     const now = new Date().getTime();
     if (now < BIRTHDAY_START) {
-      setAlertInfo({ title: "아직 생일이 아니야!", msg: "2026년 1월 15일 0시에 다시 와줘!", icon: "📅" });
+      setAlertInfo({ title: "아직 너의 생일이 아니야!", msg: "2026년 1월 15일 0시에 다시 와줘!", icon: "📅" });
       return false;
     }
     if (now > BIRTHDAY_END) {
@@ -204,6 +206,7 @@ const App = () => {
   const handleStartQuest = () => {
     if (checkBirthdayAccess()) {
       setCurrentUser(FRIENDS[0]);
+      setView('QUESTS');
     }
   };
 
@@ -212,6 +215,7 @@ const App = () => {
       setIsAdmin(true);
       setShowAdminLogin(false);
       setCurrentUser(FRIENDS[0]);
+      setView('QUESTS');
     } else {
       alert("비밀번호가 틀렸습니다.");
     }
@@ -226,25 +230,46 @@ const App = () => {
     setEditingQuestId(null);
   };
 
-  if (!currentUser) {
+  const handleGoHome = () => {
+    setView('HOME');
+  };
+
+  const handleGoQuests = () => {
+    if (checkBirthdayAccess()) {
+        setView('QUESTS');
+    }
+  };
+
+  if (view === 'HOME') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-10 bg-sky-50">
+      <div className="min-h-screen flex flex-col items-center justify-center p-10 bg-sky-50 relative">
         <h1 className="text-4xl font-black text-slate-800 mb-2 tracking-tighter">Birthday Quest</h1>
         <p className="text-sky-500 font-bold mb-12">지혜의 케이크 획득 대작전</p>
         
         <AnimatedCake />
         
-        <button 
-          onClick={handleStartQuest}
-          className="mt-16 w-full max-w-sm py-6 btn-primary text-2xl shadow-xl shadow-sky-200 transform active:scale-95 transition-all"
-        >
-          도전하기
-        </button>
+        <div className="mt-16 w-full max-w-sm space-y-4">
+            {currentUser ? (
+                 <button 
+                 onClick={handleGoQuests}
+                 className="w-full py-6 btn-primary text-2xl shadow-xl shadow-sky-200 transform active:scale-95 transition-all"
+               >
+                 미션 계속하기
+               </button>
+            ) : (
+                <button 
+                onClick={handleStartQuest}
+                className="w-full py-6 btn-primary text-2xl shadow-xl shadow-sky-200 transform active:scale-95 transition-all"
+              >
+                도전하기
+              </button>
+            )}
+        </div>
 
-        {/* Hidden Admin Trigger */}
+        {/* Admin Mode Hidden Button */}
         <button 
           onClick={() => setShowAdminLogin(true)} 
-          className="fixed bottom-4 right-4 text-[10px] text-slate-300 font-bold uppercase tracking-widest hover:text-sky-400 transition-colors"
+          className="fixed bottom-4 right-4 text-[10px] text-slate-300 font-bold uppercase tracking-widest hover:text-sky-400 transition-colors z-50"
         >
           Admin Mode
         </button>
@@ -259,10 +284,21 @@ const App = () => {
     <div className="min-h-screen pb-20 bg-slate-50">
       <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-lg px-6 py-5 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">{currentUser.avatar}</span>
-          <span className="font-black text-slate-800">{currentUser.name} {isAdmin && <span className="text-xs text-sky-500 bg-sky-50 px-2 py-1 rounded ml-1">ADMIN</span>}</span>
+          <button 
+            onClick={handleGoHome}
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-sky-50 text-sky-500 border border-sky-100 hover:bg-sky-100 transition-colors shadow-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          </button>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{currentUser?.avatar}</span>
+            <span className="font-black text-slate-800">
+                {currentUser?.name} 
+                {isAdmin && <span className="text-[10px] text-sky-500 bg-sky-50 px-2 py-1 rounded ml-2 align-middle">ADMIN</span>}
+            </span>
+          </div>
         </div>
-        <button onClick={() => {setCurrentUser(null); setIsAdmin(false);}} className="text-xs font-bold text-sky-500">로그아웃</button>
+        <button onClick={() => {setCurrentUser(null); setIsAdmin(false); setView('HOME');}} className="text-xs font-bold text-sky-500 bg-sky-50 px-4 py-2 rounded-full border border-sky-100">로그아웃</button>
       </header>
 
       <main className="max-w-lg mx-auto p-6 space-y-6">
@@ -299,7 +335,7 @@ const App = () => {
                 <p className="text-slate-600 mb-8 leading-relaxed font-semibold">{quest.description}</p>
                 
                 {!isCompleted ? (
-                  <button onClick={() => handleComplete(quest.id)} className="w-full py-5 btn-primary text-xl">미션 완료하기</button>
+                  <button onClick={() => handleComplete(quest.id)} className="w-full py-5 btn-primary text-xl shadow-sky-100 shadow-xl">미션 완료하기</button>
                 ) : (
                   <div className="animate-fadeIn p-6 bg-sky-50 rounded-[2rem] text-center border border-sky-100">
                     <span className="text-sky-500 font-black">🎁 보상 획득: {quest.reward.title}</span>
@@ -310,7 +346,7 @@ const App = () => {
               {isAdmin && (
                 <button 
                   onClick={() => setEditingQuestId(quest.id)}
-                  className="absolute top-4 right-4 bg-sky-500 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-4 right-4 bg-sky-500 text-white w-10 h-10 rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
                 >
                   ⚙️
                 </button>
@@ -318,6 +354,13 @@ const App = () => {
             </div>
           );
         })}
+
+        <button 
+          onClick={handleGoHome} 
+          className="w-full py-4 text-slate-400 font-bold text-sm hover:text-sky-500 transition-colors flex items-center justify-center gap-2 mt-4"
+        >
+          <span>🏠</span> 처음 화면으로 돌아가기
+        </button>
       </main>
 
       {editingQuestId && (
@@ -327,6 +370,7 @@ const App = () => {
           onCancel={() => setEditingQuestId(null)} 
         />
       )}
+      {showAdminLogin && <AdminLoginModal onConfirm={handleAdminAuth} onCancel={() => setShowAdminLogin(false)} />}
     </div>
   );
 };
