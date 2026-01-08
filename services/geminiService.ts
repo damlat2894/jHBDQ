@@ -1,9 +1,23 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// 브라우저 환경에서 에러 방지를 위한 안전한 API 키 참조
+const getApiKey = () => {
+  try {
+    return (window as any).process?.env?.API_KEY || "";
+  } catch {
+    return "";
+  }
+};
+
+const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
 export const generateQuestIdea = async (friendName: string, birthdayPersonName: string) => {
+  if (!getApiKey()) {
+    console.warn("API Key is missing. Quest generation will not work.");
+    return [];
+  }
+  
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',

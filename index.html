@@ -6,9 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Birthday Quest</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 브라우저에서 TSX를 실시간 변환하기 위한 Babel 추가 -->
+    <!-- 브라우저에서 TSX를 실시간 변환하기 위한 Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;900&family=Jua&display=swap" rel="stylesheet">
+    <script>
+        // 브라우저에 없는 process 변수를 가짜로 만들어 에러 방지
+        window.process = { env: { API_KEY: "" } };
+    </script>
     <style>
         body {
             font-family: 'Pretendard', 'Jua', sans-serif;
@@ -81,8 +85,10 @@
 {
   "imports": {
     "react": "https://esm.sh/react@18.2.0",
-    "react-dom": "https://esm.sh/react-dom@18.2.0/client",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "@google/genai": "https://esm.sh/@google/genai@1.34.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
@@ -90,7 +96,7 @@
 </head>
 <body>
     <div id="root"></div>
-    <!-- 앱의 시작점인 index.tsx를 불러옵니다 (Babel이 처리하도록 type 설정) -->
-    <script type="text/babel" data-type="module" src="./index.tsx"></script>
+    <!-- data-presets를 추가하여 TypeScript와 React 문법을 명확히 해석하도록 함 -->
+    <script type="text/babel" data-type="module" data-presets="react,typescript" src="./index.tsx"></script>
 </body>
 </html>
