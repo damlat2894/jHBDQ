@@ -1,10 +1,8 @@
 
-
-// --- 이 파일에서는 더 이상 import 문을 사용하지 않습니다 (브라우저 호럼성) ---
-// Fix: Reference React from window to avoid "Cannot find name" error in environments where React is global
+// --- 이 파일에서는 import 문을 절대 사용하지 않습니다 ---
 const { useState, useEffect, useRef } = (window as any).React;
 
-// --- TYPES ---
+// --- 1. TYPES ---
 type UserRole = 'BIRTHDAY_USER' | 'FRIEND_1' | 'FRIEND_2' | 'FRIEND_3';
 
 interface Friend {
@@ -39,7 +37,7 @@ interface Quest {
   reward: Reward;
 }
 
-// --- CONSTANTS ---
+// --- 2. CONSTANTS ---
 const FRIENDS: Friend[] = [
   { id: 'BIRTHDAY_USER', name: '지혜 (생일자)', avatar: '🎂', color: 'bg-pink-400' },
   { id: 'FRIEND_1', name: '예진', avatar: '🦁', color: 'bg-yellow-400' },
@@ -93,9 +91,11 @@ const INITIAL_QUESTS: Quest[] = [
   }
 ];
 
-// --- COMPONENTS ---
-const Confetti = ({ type }) => {
-  const canvasRef = useRef(null);
+// --- 3. COMPONENTS ---
+
+const Confetti = ({ type }: { type?: RewardType }) => {
+  // Fix: Removed type argument from useRef call because React hooks are untyped here
+  const canvasRef = useRef(null as HTMLCanvasElement | null);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -103,7 +103,7 @@ const Confetti = ({ type }) => {
     if (!ctx) return;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    const pieces = [];
+    const pieces: any[] = [];
     const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
     for (let i = 0; i < 150; i++) {
       pieces.push({
@@ -116,7 +116,7 @@ const Confetti = ({ type }) => {
         rotationSpeed: Math.random() * 10 - 5
       });
     }
-    let animationFrameId;
+    let animationFrameId: number;
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       pieces.forEach((p) => {
@@ -134,7 +134,7 @@ const Confetti = ({ type }) => {
     };
     render();
     return () => cancelAnimationFrame(animationFrameId);
-  }, []);
+  }, [type]);
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[60]" />;
 };
 
@@ -150,8 +150,7 @@ const CakeSlice = ({ size = "w-32 h-32" }) => (
   </div>
 );
 
-// Fix: Use 'any' type for props to bypass strict checking of internal React props like 'key' in mapped collections
-const QuestCard = ({ quest, onComplete }: any) => {
+const QuestCard = ({ quest, onComplete, isBirthdayUser }: any) => {
   const creator = FRIENDS.find(f => f.id === quest.creatorId);
   const isCompleted = quest.status === QuestStatus.COMPLETED;
   return (
@@ -166,9 +165,10 @@ const QuestCard = ({ quest, onComplete }: any) => {
         </div>
       </div>
       <p className="text-slate-600 mb-8 leading-relaxed font-semibold text-[15px]">{quest.description}</p>
-      {!isCompleted ? (
+      {!isCompleted && isBirthdayUser && (
         <button onClick={() => onComplete(quest.id)} className="w-full py-5 btn-primary text-xl shadow-sky-100 shadow-xl active:shadow-inner">미션 완료하기</button>
-      ) : (
+      )}
+      {isCompleted && (
         <div className="animate-fadeIn">
           <div className="flex items-center gap-2 mb-4 bg-green-50 px-4 py-2 rounded-full w-fit border border-green-100">
             <span className="text-green-500 text-sm font-black tracking-tighter">✓ MISSION CLEAR!</span>
@@ -178,6 +178,7 @@ const QuestCard = ({ quest, onComplete }: any) => {
             <div className="rounded-[2rem] overflow-hidden shadow-inner aspect-square bg-white border-4 border-white flex items-center justify-center">
               <CakeSlice size="w-48 h-48" />
             </div>
+            {quest.reward.cardMessage && <p className="mt-5 text-slate-600 italic text-center text-sm leading-relaxed px-2">"{quest.reward.cardMessage}"</p>}
           </div>
         </div>
       )}
@@ -185,7 +186,6 @@ const QuestCard = ({ quest, onComplete }: any) => {
   );
 };
 
-// --- APP ---
 const RealTimeClock = () => {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
@@ -206,17 +206,30 @@ const RealTimeClock = () => {
   );
 };
 
+const QuestCompleteOverlay = ({ quest, onClose }: any) => (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/50 backdrop-blur-md animate-fadeIn">
+    <Confetti type={quest.reward.type} />
+    <div className="soft-card p-10 w-full max-w-sm text-center relative animate-slideUp border-4 border-white shadow-2xl">
+      <div className="absolute top-0 left-0 w-full h-2 bg-sky-500"></div>
+      <div className="flex justify-center mb-6"><CakeSlice size="w-40 h-40" /></div>
+      <h2 className="text-3xl font-black text-slate-800 mb-2">미션 성공!</h2>
+      <p className="text-slate-400 font-bold mb-8">지혜님이 대단한 활약을 보여줬어요!</p>
+      <button onClick={onClose} className="w-full py-5 btn-primary text-xl">확인하러 가기</button>
+    </div>
+  </div>
+);
+
+// --- 4. APP ---
 const App = () => {
-  const [currentUser, setCurrentUser] = useState(null);
+  // Fix: Removed type arguments from useState calls because React hooks are untyped here
+  const [currentUser, setCurrentUser] = useState(null as Friend | null);
   const [quests, setQuests] = useState(() => {
     const saved = localStorage.getItem('bq_quests');
-    return saved ? JSON.parse(saved) : INITIAL_QUESTS;
+    return (saved ? JSON.parse(saved) : INITIAL_QUESTS) as Quest[];
   });
-  const [completedQuest, setCompletedQuest] = useState(null);
+  const [completedQuest, setCompletedQuest] = useState(null as Quest | null);
 
-  useEffect(() => {
-    localStorage.setItem('bq_quests', JSON.stringify(quests));
-  }, [quests]);
+  useEffect(() => { localStorage.setItem('bq_quests', JSON.stringify(quests)); }, [quests]);
 
   const handleComplete = (id: number) => {
     const target = quests.find(q => q.id === id);
@@ -226,18 +239,16 @@ const App = () => {
     setCompletedQuest({ ...target, status: QuestStatus.COMPLETED });
   };
 
+  const completedCount = quests.filter(q => q.status === QuestStatus.COMPLETED).length;
+  const progressPercent = (completedCount / quests.length) * 100;
+
   if (!currentUser) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-10">
         <RealTimeClock />
         <h1 className="text-4xl font-black text-slate-800 mb-12">HBD Quest</h1>
         <div className="cake-bounce mb-12"><CakeSlice size="w-64 h-64" /></div>
-        <button
-          onClick={() => setCurrentUser(FRIENDS[0])}
-          className="w-full max-w-sm py-6 btn-primary text-2xl shadow-lg transform active:scale-95 transition-transform"
-        >
-          도전하기
-        </button>
+        <button onClick={() => setCurrentUser(FRIENDS[0])} className="w-full max-w-sm py-6 btn-primary text-2xl shadow-lg active:scale-95 transition-transform">도전하기</button>
       </div>
     );
   }
@@ -245,27 +256,21 @@ const App = () => {
   return (
     <div className="min-h-screen pb-20">
       <RealTimeClock />
-      {completedQuest && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/50 backdrop-blur-md">
-          <Confetti type={completedQuest.reward.type} />
-          <div className="soft-card p-10 w-full max-w-sm text-center relative border-4 border-white shadow-2xl">
-            <CakeSlice size="w-40 h-40 mx-auto" />
-            <h2 className="text-3xl font-black text-slate-800 mb-8 mt-4">미션 성공!</h2>
-            <button onClick={() => setCompletedQuest(null)} className="w-full py-5 btn-primary text-xl">확인</button>
-          </div>
-        </div>
-      )}
+      {completedQuest && <QuestCompleteOverlay quest={completedQuest} onClose={() => setCompletedQuest(null)} />}
       <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-lg px-6 py-5 flex justify-between items-center shadow-sm">
         <span className="font-black text-slate-800">{currentUser.name}</span>
         <button onClick={() => setCurrentUser(null)} className="text-xs font-bold text-sky-500">로그아웃</button>
       </header>
       <main className="max-w-lg mx-auto p-6 space-y-6">
-        {quests.map(q => <QuestCard key={q.id} quest={q} onComplete={handleComplete} />)}
+        <div className="soft-card p-8 mb-4">
+          <div className="flex justify-between mb-4"><h2 className="font-black">미션 진행률</h2><span>{completedCount}/{quests.length}</span></div>
+          <div className="progress-bar"><div className="progress-fill" style={{ width: `${progressPercent}%` }}></div></div>
+        </div>
+        {quests.map(q => <QuestCard key={q.id} quest={q} onComplete={handleComplete} isBirthdayUser={currentUser.id === 'BIRTHDAY_USER'} />)}
       </main>
     </div>
   );
 };
 
-// Fix: Reference ReactDOM from window to avoid "Cannot find name" error in environments where ReactDOM is global
 const root = (window as any).ReactDOM.createRoot(document.getElementById('root')!);
 root.render(<App />);
