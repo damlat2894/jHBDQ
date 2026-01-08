@@ -1,22 +1,9 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-// 브라우저 환경에서 에러 방지를 위한 안전한 API 키 참조
-const getApiKey = () => {
-  try {
-    return (window as any).process?.env?.API_KEY || "";
-  } catch {
-    return "";
-  }
-};
-
-const ai = new GoogleGenAI({ apiKey: getApiKey() });
-
+// Fix: Always obtain the API key directly from process.env.API_KEY and initialize GoogleGenAI per call
 export const generateQuestIdea = async (friendName: string, birthdayPersonName: string) => {
-  if (!getApiKey()) {
-    console.warn("API Key is missing. Quest generation will not work.");
-    return [];
-  }
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   try {
     const response = await ai.models.generateContent({
@@ -32,7 +19,9 @@ export const generateQuestIdea = async (friendName: string, birthdayPersonName: 
       }
     });
 
-    return JSON.parse(response.text || "[]");
+    // Fix: Access response.text property directly as per latest SDK guidelines
+    const text = response.text;
+    return JSON.parse(text || "[]");
   } catch (error) {
     console.error("Error generating quest idea:", error);
     return [];

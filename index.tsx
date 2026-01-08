@@ -1,7 +1,8 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { createRoot } from 'react-dom/client';
-import { GoogleGenAI } from "@google/genai";
+
+// --- 이 파일에서는 더 이상 import 문을 사용하지 않습니다 (브라우저 호럼성) ---
+// Fix: Reference React from window to avoid "Cannot find name" error in environments where React is global
+const { useState, useEffect, useRef } = (window as any).React;
 
 // --- TYPES ---
 type UserRole = 'BIRTHDAY_USER' | 'FRIEND_1' | 'FRIEND_2' | 'FRIEND_3';
@@ -93,8 +94,8 @@ const INITIAL_QUESTS: Quest[] = [
 ];
 
 // --- COMPONENTS ---
-const Confetti: React.FC<{ type?: RewardType }> = ({ type }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+const Confetti = ({ type }) => {
+  const canvasRef = useRef(null);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -102,7 +103,7 @@ const Confetti: React.FC<{ type?: RewardType }> = ({ type }) => {
     if (!ctx) return;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    const pieces: any[] = [];
+    const pieces = [];
     const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
     for (let i = 0; i < 150; i++) {
       pieces.push({
@@ -115,7 +116,7 @@ const Confetti: React.FC<{ type?: RewardType }> = ({ type }) => {
         rotationSpeed: Math.random() * 10 - 5
       });
     }
-    let animationFrameId: number;
+    let animationFrameId;
     const render = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       pieces.forEach((p) => {
@@ -137,7 +138,7 @@ const Confetti: React.FC<{ type?: RewardType }> = ({ type }) => {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-[60]" />;
 };
 
-const CakeSlice: React.FC<{ size?: string }> = ({ size = "w-32 h-32" }) => (
+const CakeSlice = ({ size = "w-32 h-32" }) => (
   <div className={`${size} relative floating flex items-center justify-center`}>
     <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-xl">
       <path d="M50 80 L90 60 L90 40 L50 60 Z" fill="#F472B6" />
@@ -149,7 +150,8 @@ const CakeSlice: React.FC<{ size?: string }> = ({ size = "w-32 h-32" }) => (
   </div>
 );
 
-const QuestCard: React.FC<{ quest: Quest, onComplete: (id: number) => void }> = ({ quest, onComplete }) => {
+// Fix: Use 'any' type for props to bypass strict checking of internal React props like 'key' in mapped collections
+const QuestCard = ({ quest, onComplete }: any) => {
   const creator = FRIENDS.find(f => f.id === quest.creatorId);
   const isCompleted = quest.status === QuestStatus.COMPLETED;
   return (
@@ -184,7 +186,7 @@ const QuestCard: React.FC<{ quest: Quest, onComplete: (id: number) => void }> = 
 };
 
 // --- APP ---
-const RealTimeClock: React.FC = () => {
+const RealTimeClock = () => {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -204,13 +206,13 @@ const RealTimeClock: React.FC = () => {
   );
 };
 
-const App: React.FC = () => {
-  const [currentUser, setCurrentUser] = useState<Friend | null>(null);
-  const [quests, setQuests] = useState<Quest[]>(() => {
+const App = () => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [quests, setQuests] = useState(() => {
     const saved = localStorage.getItem('bq_quests');
     return saved ? JSON.parse(saved) : INITIAL_QUESTS;
   });
-  const [completedQuest, setCompletedQuest] = useState<Quest | null>(null);
+  const [completedQuest, setCompletedQuest] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('bq_quests', JSON.stringify(quests));
@@ -245,8 +247,8 @@ const App: React.FC = () => {
       <RealTimeClock />
       {completedQuest && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/50 backdrop-blur-md">
-          <Confetti />
-          <div className="soft-card p-10 w-full max-w-sm text-center relative animate-slideUp border-4 border-white shadow-2xl">
+          <Confetti type={completedQuest.reward.type} />
+          <div className="soft-card p-10 w-full max-w-sm text-center relative border-4 border-white shadow-2xl">
             <CakeSlice size="w-40 h-40 mx-auto" />
             <h2 className="text-3xl font-black text-slate-800 mb-8 mt-4">미션 성공!</h2>
             <button onClick={() => setCompletedQuest(null)} className="w-full py-5 btn-primary text-xl">확인</button>
@@ -264,5 +266,6 @@ const App: React.FC = () => {
   );
 };
 
-const root = createRoot(document.getElementById('root')!);
-root.render(<React.StrictMode><App /></React.StrictMode>);
+// Fix: Reference ReactDOM from window to avoid "Cannot find name" error in environments where ReactDOM is global
+const root = (window as any).ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
