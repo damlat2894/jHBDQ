@@ -1,0 +1,7 @@
+{
+  "name": "Birthday Quest",
+  "description": "A festive, game-like app for 4 friends where the birthday person completes daily missions created by their best friends to unlock shared memories and digital gifts.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
