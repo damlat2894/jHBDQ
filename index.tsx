@@ -56,8 +56,8 @@ const INITIAL_QUESTS: Quest[] = [
   },
   {
     id: 2,
-    title: "노래방에서 90점 넘기",
-    description: "유진이의 퀘스트! 노래방에 가서 우리들의 주제곡을 부르고 90점 넘는 화면을 공유해줘!",
+    title: "언제나 주인공은 우리야!",
+    description: "우린 어딜 가나 주인공이잖아, 그치? 끄덕여. 쨌든! 놀이공원에 와도 주인공은 우리야. 그럼… 각 테마에서도 우리가 주인공이겠네? 유진이와 각 테마에 어울리는 포즈를 준비해서 사진을 찍고 미션을 완료해 줘.",
     creatorId: 'FRIEND_2',
     unlockTime: new Date().toISOString(),
     status: QuestStatus.AVAILABLE,
@@ -171,11 +171,13 @@ const App = () => {
   const [quests, setQuests] = useState(() => {
     const saved = localStorage.getItem('bq_quests');
     if (saved) {
-        // 기존 저장 데이터가 있다면 민성 미션만 강제 업데이트 할지 고민되지만,
-        // 사용자 요청에 따라 기본값(INITIAL_QUESTS)을 우선시하거나 덮어쓰기 로직을 넣습니다.
         const parsed = JSON.parse(saved) as Quest[];
-        // 민성(FRIEND_3)의 미션 내용이 이전 것이라면 업데이트
-        return parsed.map(q => q.creatorId === 'FRIEND_3' ? { ...INITIAL_QUESTS[2], status: q.status } : q);
+        // 유진(FRIEND_2)과 민성(FRIEND_3)의 미션 내용 강제 업데이트
+        return parsed.map(q => {
+            if (q.creatorId === 'FRIEND_2') return { ...INITIAL_QUESTS[1], status: q.status };
+            if (q.creatorId === 'FRIEND_3') return { ...INITIAL_QUESTS[2], status: q.status };
+            return q;
+        });
     }
     return INITIAL_QUESTS;
   });
