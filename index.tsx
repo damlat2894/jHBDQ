@@ -47,8 +47,8 @@ const BIRTHDAY_END = new Date('2026-01-15T23:59:59+09:00').getTime();
 const INITIAL_QUESTS: Quest[] = [
   {
     id: 1,
-    title: "최애 커피 사오기!",
-    description: "오늘 하루의 시작은 달콤하게! 근처 카페에서 예진이가 좋아하는 바닐라 라떼를 직접 사서 인증샷을 찍어줘.",
+    title: "한도 없는 내 카드",
+    description: "평소에 예진언니가 자주 하던 말은 뭘까?카드 한도 때문에ㅜ 기억하지?! 유니버설에서 카드 한도 없이 시간은 한도 있게! 지혜가 원하는 걸 1분 내에 들고오면 예진언니가 바로 사준다~! (미션 시작 구호 : 온니 나 이고 사주면 안돼? 를 외치면 1분이 카운트 된다.)",
     creatorId: 'FRIEND_1',
     unlockTime: new Date().toISOString(),
     status: QuestStatus.AVAILABLE,
@@ -172,8 +172,9 @@ const App = () => {
     const saved = localStorage.getItem('bq_quests');
     if (saved) {
         const parsed = JSON.parse(saved) as Quest[];
-        // 유진(FRIEND_2)과 민성(FRIEND_3)의 미션 내용 강제 업데이트
+        // 모든 친구들의 미션 내용 강제 업데이트 (예진, 유진, 민성)
         return parsed.map(q => {
+            if (q.creatorId === 'FRIEND_1') return { ...INITIAL_QUESTS[0], status: q.status };
             if (q.creatorId === 'FRIEND_2') return { ...INITIAL_QUESTS[1], status: q.status };
             if (q.creatorId === 'FRIEND_3') return { ...INITIAL_QUESTS[2], status: q.status };
             return q;
